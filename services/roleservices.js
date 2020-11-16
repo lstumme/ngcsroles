@@ -56,12 +56,7 @@ exports.getRole = async ({ roleId }) => {
 exports.findRole = async ({ name }) => {
     return Role.findOne({ name: name })
         .then(role => {
-            if (!role) {
-                const error = new Error('Role not found.')
-                error.statusCode = 404;
-                throw error;
-            }
-            return convertRole2Object(role);
+            return role ? convertRole2Object(role) : role;
         })
 }
 

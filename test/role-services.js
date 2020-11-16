@@ -263,14 +263,10 @@ describe('Role services', function () {
             await dbHandler.clearDatabase();
         });
 
-        it('should throw an error if Role not found', function (done) {
+        it('should return null if Role not found', function (done) {
             roleServices.findRole({ name: 'unknownRole' })
                 .then(result => {
-                    assert.fail('Error');
-                })
-                .catch(err => {
-                    expect(err).to.have.property('message', 'Role not found.');
-                    expect(err).to.have.property('statusCode', 404);
+                    expect(result).to.be.null;
                     done();
                 })
         });

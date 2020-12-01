@@ -1,196 +1,197 @@
-const { expect, assert } = require('chai');
-const { ObjectId } = require('mongodb');
+const { expect, should, assert } = require('chai');
 const { dbHandler } = require('ngcstesthelpers');
-const roleServices = require('../services/roleservices');
+const { ObjectId } = require('mongodb');
+
+const RoleServices = require('../services/roleservices');
 const Role = require('../model/role');
 
-describe('Role services', function () {
-    describe('#createRole', function () {
-        before(async () => {
-            await dbHandler.connect();
-        });
+describe('RoleServices', function () {
+	describe('#createRole function', function () {
+		let defaultRole;
+		
+		before(async () => {
+			await dbHandler.connect();
+			await Role.createIndexes();
+		});
+		
+		after(async () => {
+			await dbHandler.closeDatabase();
+		});
+		
+		afterEach(async () => {
+			await dbHandler.clearDatabase();
+		});
+		
+		beforeEach(async () => {
+			defaultRole = Role({
+				name: 'defaultName',
+				label: 'defaultLabel',
+			});
+			defaultRole = await defaultRole.save();
+		});
 
-        after(async () => {
-            await dbHandler.closeDatabase();
-        });
+		it('should throw an error if Role with given name already exists', function (done) {
+			const params = {
+				name: 'defaultName',
+				label: 'otherLabel',
+			};
 
-        beforeEach(async () => {
-            const role = new Role({
-                name: 'role1',
-                label: 'role1Label'
-            });
-            await role.save();
-        });
-
-        afterEach(async () => {
-            await dbHandler.clearDatabase();
-        });
-
-        it('should throw an error if a role with given name already exists', function (done) {
-            const params = { name: 'role1', label: 'role1Label' };
-            roleServices.createRole(params)
+            RoleServices.createRole(params)
                 .then(result => {
                     assert.fail('Error');
                 })
                 .catch(err => {
-                    expect(err).to.have.property('message', `Role ${params.name} already exists`);
-                    expect(err).to.have.property('statusCode', 409);
+                    expect(err).to.have.property('message', `E11000 duplicate key error dup key: { : "${params.name}" }`);
                     done();
                 })
-        });
+				.catch(err => {
+					console.log(err);
+					assert.fail(err);
+					done();
+				})
+		});
 
-        it('should create a role', function (done) {
-            const params = { name: 'role2', label: 'role2Label' };
-            roleServices.createRole(params)
+		it('should throw an error if Role with given label already exists', function (done) {
+			const params = {
+				label: 'defaultLabel',
+				name: 'otherName',
+			};
+
+            RoleServices.createRole(params)
                 .then(result => {
-                    expect(result).to.have.property('roleId');
-                    Role.findOne({ '_id': result.roleId })
+                    assert.fail('Error');
+                })
+                .catch(err => {
+                    expect(err).to.have.property('message', `E11000 duplicate key error dup key: { : "${params.label}" }`);
+                    done();
+                })
+				.catch(err => {
+					console.log(err);
+					assert.fail(err);
+					done();
+				})
+		});
+
+		it('should create a Role', function (done) {
+			const params = {
+				name: 'otherName',
+				label: 'otherLabel',
+			};
+            RoleServices.createRole(params)
+                .then(result => {
+                    Role.findOne({ 'name': params.name })
                         .then(newRole => {
                             if (!newRole) {
-                                assert.fail('Role not created');
+                                assert.fail('User not created');
                             }
-                            expect(newRole).to.have.property('name', params.name);
+							expect(result).to.have.property('roleId', newRole._id.toString());
+
+							expect(result).to.have.property('name', params.name);
+							expect(newRole).to.have.property('name', params.name);
+
+							expect(result).to.have.property('label', params.label);
+							expect(newRole).to.have.property('label', params.label);
+
                             done();
                         })
                 })
                 .catch(err => {
                     console.log(err);
-                    assert.fail('RoleService Error');
+                    assert.fail('UserService Error');
+					done();
                 })
-        });
 
-    });
+		});
+	});
 
-    describe('#deleteRole', function () {
-        let existingRole;
-        before(async () => {
-            await dbHandler.connect();
-        });
+	describe('#deleteRole function', function () {
+		let defaultRole;
+		
+		before(async () => {
+			await dbHandler.connect();
+			await Role.createIndexes();
+		});
+		
+		after(async () => {
+			await dbHandler.closeDatabase();
+		});
+		
+		afterEach(async () => {
+			await dbHandler.clearDatabase();
+		});
+		
+		beforeEach(async () => {
+			defaultRole = Role({
+				name: 'defaultName',
+				label: 'defaultLabel',
+			});
+			defaultRole = await defaultRole.save();
+		});
 
-        after(async () => {
-            await dbHandler.closeDatabase();
-        });
+		it('should throw an error if Role to delete is not found', function (done) {
+			const params = {
+				roleId: ObjectId().toString(),
+			};
+			RoleServices.deleteRole(params)
+				.then(result => {
+					assert.fail('deleteRole error');
+					done();
+				})
+				.catch(err => {
+					expect(err).to.have.property('message', 'Role to delete was not found');
+					expect(err).to.have.property('statusCode', 404);
+					done();
+				})
+				.catch(err => {
+					console.log(err);
+					assert.fail(err);
+					done();
+				});
+		});
 
-        beforeEach(async () => {
-            existingRole = new Role({
-                name: 'role1',
-                label: 'role1Label'
-            });
-            existingRole = await existingRole.save();
-        });
+		it('should delete Role if Role exists', function (done) {
+			const params = {
+				roleId: defaultRole._id.toString(),
+			};
+			RoleServices.deleteRole(params)
+				.then(result => {
+					expect(result).to.have.property('roleId', params.roleId);
+					done();
+				})
+				.catch(err => {
+					console.log(err);
+					assert.fail(err);
+					done();
+				});
+		});		
+	});
 
-        afterEach(async () => {
-            await dbHandler.clearDatabase();
-        });
+	describe('#getRoles function', function () {
+		before(async () => {
+			await dbHandler.connect();
+			await Role.createIndexes();
+		});
+		
+		after(async () => {
+			await dbHandler.closeDatabase();
+		});
+		
+		afterEach(async () => {
+			await dbHandler.clearDatabase();
+		});
+		
+		beforeEach(async () => {
+			for (let i = 0; i < 20; i++) {
+				const role = new Role({
+					name: 'Name_' + i,
+					label: 'Label_' + i,
+				});
+				await role.save();
+			}			
+		});
 
-        it('should throw an error if a role with roleId name does not exists', function (done) {
-            const params = { roleId: new ObjectId() };
-            roleServices.deleteRole(params)
-                .then(result => {
-                    assert.fail('Error');
-                })
-                .catch(err => {
-                    expect(err).to.have.property('message', `Could not find role.`);
-                    expect(err).to.have.property('statusCode', 404);
-                    done();
-                })
-        });
-
-        it('should delete role if role exists', function (done) {
-            const params = { roleId: existingRole._id.toString() };
-            roleServices.deleteRole(params)
-                .then(result => {
-                    Role.countDocuments({}, function (err, count) {
-                        if (err) {
-                            assert.fail('Database Error');
-                        }
-                        expect(count).to.equal(0);
-                        done();
-                    });
-                })
-                .catch(err => {
-                    assert.fail('Error');
-                    done();
-                })
-        });
-
-    });
-
-    describe('#getRole function', function () {
-        let registeredRole;
-        before(async () => {
-            await dbHandler.connect();
-        });
-
-        after(async () => {
-            await dbHandler.closeDatabase();
-        });
-
-        beforeEach(async () => {
-            const role = new Role({
-                name: 'role1',
-                label: 'role1Label'
-            });
-            registeredRole = await role.save();
-        });
-
-        afterEach(async () => {
-            await dbHandler.clearDatabase();
-        });
-
-        it('should throw an error if Role not found', function (done) {
-            roleServices.getRole({ roleId: ObjectId().toString() })
-                .then(result => {
-                    assert.fail('Error');
-                })
-                .catch(err => {
-                    expect(err).to.have.property('message', 'Role not found.');
-                    expect(err).to.have.property('statusCode', 404);
-                    done();
-                })
-        });
-
-        it('should return a role object if role found', function (done) {
-            roleServices.getRole({ roleId: registeredRole._id.toString() })
-                .then(result => {
-                    expect(result).to.have.property('roleId', registeredRole._id.toString());
-                    expect(result).to.have.property('name', registeredRole.name);
-                    expect(result).to.have.property('label', registeredRole.label);
-                    done();
-                })
-                .catch(err => {
-                    assert.fail(err.toString());
-                    done();
-                })
-        });
-
-    });
-
-    describe('#getRoles function', function () {
-        before(async () => {
-            await dbHandler.connect();
-        });
-
-        after(async () => {
-            await dbHandler.closeDatabase();
-        });
-
-        beforeEach(async () => {
-            for (let i = 0; i < 20; i++) {
-                const role = new Role({
-                    name: 'role' + i,
-                    label: 'role' + i + 'Label'
-                });
-                await role.save();
-            }
-        });
-
-        afterEach(async () => {
-            await dbHandler.clearDatabase();
-        });
-
-        it('should throw an error if range out of bounds', function (done) {
-            roleServices.getRoles({ page: 3, perPage: 10 })
+		it('should throw an error if range out of bounds', function (done) {
+            RoleServices.getRoles({ page: '3', perPage: '10' })
                 .then(result => {
                     assert.fail('Error');
                 })
@@ -199,380 +200,493 @@ describe('Role services', function () {
                     expect(err).to.have.property('statusCode', 400);
                     done();
                 })
-        });
+				.catch(err => {
+					console.log(err);
+					assert.fail(err);
+					done();
+				});
+		});
 
-        it('should return an object contianing the required data and the number of pages', function (done) {
-            const perPage = 10;
-            roleServices.getRoles({ page: 1, perPage: perPage })
+		it('should return an object containing the required data and the number if pages', function (done) {
+            const perPage = '10';
+            RoleServices.getRoles({ page: 1, perPage: perPage })
                 .then(result => {
                     expect(result).to.have.property('pageCount', 2);
                     expect(result).to.have.property('roles').to.have.lengthOf(perPage);
-                    for (let i = 0; i < perPage; i++) {
-                        expect(result.roles[i]).to.have.property('name', 'role' + i);
-                        expect(result.roles[i]).to.have.property('label', 'role' + i + 'Label');
-                    }
                     done();
                 })
                 .catch(err => {
                     console.log(err);
-                    assert.fail('Error');
+                    assert.fail(err);
                     done();
-                })
-        });
+                })			
+		});
 
         it('should return an object containing the required data and the number of pages 2', function (done) {
-            const perPage = 7;
-            roleServices.getRoles({ page: 1, perPage: perPage })
+            const perPage = '7';
+            RoleServices.getRoles({ page: '1', perPage: perPage })
                 .then(result => {
                     expect(result).to.have.property('pageCount', 3);
                     expect(result).to.have.property('roles').to.have.lengthOf(perPage);
-                    for (let i = 0; i < perPage; i++) {
-                        expect(result.roles[i]).to.have.property('name', 'role' + i);
-                        expect(result.roles[i]).to.have.property('label', 'role' + i + 'Label');
-                    }
                     done();
                 })
                 .catch(err => {
                     console.log(err);
-                    assert.fail('Error');
+                    assert.fail(err);
                     done();
                 })
         });
 
-    });
 
-    describe('#findRole function', function () {
-        let registeredRole;
-        before(async () => {
-            await dbHandler.connect();
-        });
+	});
 
-        after(async () => {
-            await dbHandler.closeDatabase();
-        });
+	describe('#getRole function', function () {
+		let defaultRole;
+		
+		before(async () => {
+			await dbHandler.connect();
+			await Role.createIndexes();
+		});
+		
+		after(async () => {
+			await dbHandler.closeDatabase();
+		});
+		
+		afterEach(async () => {
+			await dbHandler.clearDatabase();
+		});
+		
+		beforeEach(async () => {
+			defaultRole = Role({
+				name: 'defaultName',
+				label: 'defaultLabel',
+			});
+			defaultRole = await defaultRole.save();
+		});
+	
+		it('should throw an error if Role not found', function (done) {
+			RoleServices.getRole({ roleId: ObjectId().toString() })
+				.then(result => {
+					assert.fail('Error');
+				})
+				.catch(err => {
+					expect(err).to.have.property('statusCode', 404);
+					expect(err).to.have.property('message', 'Role not found');
+					done();
+				})
+				.catch(err => {
+					console.log(err);
+					assert.fail(err);
+					done();
+				})
+		});
 
-        beforeEach(async () => {
-            const role = new Role({
-                name: 'role1',
-                label: 'role1Label'
-            });
-            registeredRole = await role.save();
-        });
+		it('should return an object if Role found', function (done) {
+			RoleServices.getRole({ roleId: defaultRole._id.toString() })
+				.then(result => {
+					expect(result).to.have.property('roleId', defaultRole._id.toString());
+					expect(result).to.have.property('name', defaultRole.name);
+					expect(result).to.have.property('label', defaultRole.label);
+					done();
+				})
+				.catch(err => {
+					console.log(err);
+					assert.fail(err);
+					done();
+				})
+		});
+	});
 
-        afterEach(async () => {
-            await dbHandler.clearDatabase();
-        });
+	describe('#findRoleByName function', function () {
+		let defaultRole;
+		
+		before(async () => {
+			await dbHandler.connect();
+			await Role.createIndexes();
+		});
+		
+		after(async () => {
+			await dbHandler.closeDatabase();
+		});
+		
+		afterEach(async () => {
+			await dbHandler.clearDatabase();
+		});
+		
+		beforeEach(async () => {
+			defaultRole = Role({
+				name: 'defaultName',
+				label: 'defaultLabel',
+			});
+			defaultRole = await defaultRole.save();
+		});
 
-        it('should return null if Role not found', function (done) {
-            roleServices.findRole({ name: 'unknownRole' })
-                .then(result => {
-                    expect(result).to.be.null;
-                    done();
-                })
-        });
+		it('should throw an error if Role is not found', function (done) {
+			const params = {
+				name: 'otherRoleName',
+			};
+			RoleServices.findRoleByName(params)
+				.then(role => {
+					assert.fail('Error');
+				})
+				.catch(err => {
+					expect(err).to.have.property('message', 'Could not find Role');
+					expect(err).to.have.property('statusCode', 404);
+					done();
+				})
+				.catch(err => {
+					console.log(err);
+					assert.fail(err);
+					done();
+				});
+		});
 
-        it('should return a role object if role found', function (done) {
-            roleServices.findRole({ name: registeredRole.name })
-                .then(result => {
-                    expect(result).to.have.property('roleId', registeredRole._id.toString());
-                    expect(result).to.have.property('name', registeredRole.name);
-                    expect(result).to.have.property('label', registeredRole.label);
-                    done();
-                })
-                .catch(err => {
-                    assert.fail(err.toString());
-                    done();
-                })
-        });
+		it('should return an object if Role is found', function (done) {
+			const params = {
+				name: defaultRole.name,
+			};
+			RoleServices.findRoleByName(params)
+				.then(role => {
+					expect(role).not.to.be.null;
+					expect(role).to.have.property('roleId', defaultRole._id.toString());
+					expect(role).to.have.property('name', defaultRole.name);
+					expect(role).to.have.property('label', defaultRole.label);
+					done();
+				})
+				.catch(err => {
+					console.log(err);
+					assert.fail(err);
+					done();
+				});
+		});
+	});
 
-    });
+	describe('#findRoleByLabel function', function () {
+		let defaultRole;
+		
+		before(async () => {
+			await dbHandler.connect();
+			await Role.createIndexes();
+		});
+		
+		after(async () => {
+			await dbHandler.closeDatabase();
+		});
+		
+		afterEach(async () => {
+			await dbHandler.clearDatabase();
+		});
+		
+		beforeEach(async () => {
+			defaultRole = Role({
+				name: 'defaultName',
+				label: 'defaultLabel',
+			});
+			defaultRole = await defaultRole.save();
+		});
 
-    describe('#addSubRoleToRole', function () {
-        let parentRole;
-        let subRole1;
-        let subRole2;
-        before(async () => {
-            await dbHandler.connect();
-        });
+		it('should throw an error if Role is not found', function (done) {
+			const params = {
+				label: 'otherRoleLabel',
+			};
+			RoleServices.findRoleByLabel(params)
+				.then(role => {
+					assert.fail('Error');
+				})
+				.catch(err => {
+					expect(err).to.have.property('message', 'Could not find Role');
+					expect(err).to.have.property('statusCode', 404);
+					done();
+				})
+				.catch(err => {
+					console.log(err);
+					assert.fail(err);
+					done();
+				});
+		});
 
-        after(async () => {
-            await dbHandler.closeDatabase();
-        });
+		it('should return an object if Role is found', function (done) {
+			const params = {
+				label: defaultRole.label,
+			};
+			RoleServices.findRoleByLabel(params)
+				.then(role => {
+					expect(role).not.to.be.null;
+					expect(role).to.have.property('roleId', defaultRole._id.toString());
+					expect(role).to.have.property('name', defaultRole.name);
+					expect(role).to.have.property('label', defaultRole.label);
+					done();
+				})
+				.catch(err => {
+					console.log(err);
+					assert.fail(err);
+					done();
+				});
+		});
+	});
 
-        beforeEach(async () => {
-            subRole1 = new Role({
-                name: 'subRole1',
-                label: 'subRole1Label'
-            })
-            subRole1 = await subRole1.save();
 
-            subRole2 = new Role({
-                name: 'subRole2',
-                label: 'subRole2Label'
-            });
-            subRole2 = await subRole2.save();
+	describe('#addSubRoleToRole function', function () {
+		let defaultRole;
+		
+		let defaultSubRole;
+		before(async () => {
+			await dbHandler.connect();
+			await Role.createIndexes();
+		});
+		
+		after(async () => {
+			await dbHandler.closeDatabase();
+		});
+		
+		afterEach(async () => {
+			await dbHandler.clearDatabase();
+		});
+		
+		beforeEach(async () => {
+			defaultRole = Role({
+				name: 'defaultName',
+				label: 'defaultLabel',
+			});
+			defaultRole = await defaultRole.save();
+			
+			defaultSubRole = new Role ({
+				name: 'defaultSubRoleName',
+				label: 'defaultSubRoleLabel',
+			});
+			defaultSubRole = await defaultSubRole.save();
+		});
 
-            parentRole = new Role({
-                name: 'parentRole',
-                label: 'parentRoleLabel',
-                subRoles: [subRole1._id]
-            });
-            parentRole = await parentRole.save();
-        });
+		it('should throw an error if Role is not found', function(done) {
+			const params = {
+				roleId: new ObjectId().toString(),
+				subRoleId: defaultSubRole._id.toString(), 
+			};
 
-        afterEach(async () => {
-            await dbHandler.clearDatabase();
-        });
+			RoleServices.addSubRoleToRole(params)
+				.then(() => {
+					assert.fail(err);
+				})
+				.catch(err => {
+					expect(err).to.have.property('message', 'Role not found');
+					expect(err).to.have.property('statusCode', 404);
+					done();
+				})
+				.catch(err => {
+					console.log(err);
+					assert.fail(err);
+					done();
+				});
+		});
 
-        it('should throw an error if a role with given subRoleId does not exists', function (done) {
-            const params = { parentRoleId: parentRole._id.toString(), subRoleId: (new ObjectId()).toString() };
-            roleServices.addSubRoleToRole(params)
-                .then(result => {
-                    assert.fail('Error');
-                })
-                .catch(err => {
-                    expect(err).to.have.property('message', `Could not find subRole.`);
-                    expect(err).to.have.property('statusCode', 404);
-                    done();
-                })
+		it('should throw an error if subRole is not found', function(done) {
+			const params = {
+				roleId: defaultRole._id.toString(),
+				subRoleId: new ObjectId().toString(), 
+			};
 
-        });
+			RoleServices.addSubRoleToRole(params)
+				.then(() => {
+					assert.fail(err);
+				})
+				.catch(err => {
+					expect(err).to.have.property('message', 'Role to add not found');
+					expect(err).to.have.property('statusCode', 404);
+					done();
+				})
+				.catch(err => {
+					console.log(err);
+					assert.fail(err);
+					done();
+				});
+		});
 
-        it('should throw an error if a role with given parentRoleId does not exists', function (done) {
-            const params = { subRoleId: subRole1._id.toString(), parentRoleId: (new ObjectId()).toString() };
-            roleServices.addSubRoleToRole(params)
-                .then(result => {
-                    assert.fail('Error');
-                })
-                .catch(err => {
-                    expect(err).to.have.property('message', `Could not find parent role.`);
-                    expect(err).to.have.property('statusCode', 404);
-                    done();
-                })
-        });
+		it('should throw an error if subRole is already in subRoles', function(done) {
+			const params = {
+				roleId: defaultRole._id.toString(),
+				subRoleId: defaultSubRole._id.toString(), 
+			};
 
-        it('should throw an error if a role is already in role', function (done) {
-            const params = { parentRoleId: parentRole._id.toString(), subRoleId: subRole1._id.toString() };
-            roleServices.addSubRoleToRole(params)
-                .then(result => {
-                    assert.fail('Error');
-                })
-                .catch(err => {
-                    expect(err).to.have.property('message', `Role already in role.`);
-                    expect(err).to.have.property('statusCode', 400);
-                    done();
-                })
-        });
+			defaultRole.subRoles.push(defaultSubRole._id.toString());
+			defaultRole.save()
+				.then(() => {
+					RoleServices.addSubRoleToRole(params)
+						.then(() => {
+							assert.fail(err);
+						})
+						.catch(err => {
+							expect(err).to.have.property('message', 'Role already in subRoles');
+							expect(err).to.have.property('statusCode', 400);
+							done();
+						})
+						.catch(err => {
+							console.log(err);
+							assert.fail(err);
+							done();
+						});
+				})
+		});
+		
+		it('should add Role to Role subRoles', function(done) {
+			const params = {
+				roleId: defaultRole._id.toString(),
+				subRoleId: defaultSubRole._id.toString(), 
+			};
 
-        it('should add subRole to role', function (done) {
-            const params = { parentRoleId: parentRole._id.toString(), subRoleId: subRole2._id.toString() };
-            roleServices.addSubRoleToRole(params)
-                .then(result => {
-                    return Role.findOne({ name: parentRole.name })
-                        .then(updatedRole => {
-                            expect(updatedRole.subRoles.length).to.equal(2);
-                            expect(updatedRole.subRoles.includes(subRole2._id.toString())).to.be.true;
-                            done();
-                        })
-                })
-                .catch(err => {
-                    console.log(err);
-                    assert.fail('Error');
-                    done();
-                })
-        });
-    });
+			RoleServices.addSubRoleToRole(params)
+				.then(() => {
+					Role.findOne({_id: defaultRole._id.toString()})
+						.then(newRole => {
+							expect(newRole).not.to.be.null;
+							expect(newRole.subRoles.length).to.be.equal(1);
+							expect(newRole.subRoles.includes(defaultSubRole._id.toString())).to.be.true;							
+							done();
+						})
+					.catch(err => {
+						console.log(err);
+						assert.fail(err);
+						done();
+					})
+				})
+				.catch(err => {
+					console.log(err);
+					assert.fail(err);
+					done();
+				});
+		});
+	});
 
-    describe('#removeSubRoleFromRole', function () {
-        let parentRole;
-        let subRole1;
-        let subRole2;
-        before(async () => {
-            await dbHandler.connect();
-        });
+	describe('#removeSubRoleFromRole function', function () {
+		let defaultRole;
+		
+		let defaultSubRole;
+		before(async () => {
+			await dbHandler.connect();
+			await Role.createIndexes();
+		});
+		
+		after(async () => {
+			await dbHandler.closeDatabase();
+		});
+		
+		afterEach(async () => {
+			await dbHandler.clearDatabase();
+		});
+		
+		beforeEach(async () => {
+			defaultRole = Role({
+				name: 'defaultName',
+				label: 'defaultLabel',
+			});
+			defaultRole = await defaultRole.save();
+			
+			defaultSubRole = new Role ({
+				name: 'defaultSubRoleName',
+				label: 'defaultSubRoleLabel',
+			});
+			defaultSubRole = await defaultSubRole.save();
+			
+			defaultRole.subRoles.push(defaultSubRole._id);
+			defaultRole = await defaultRole.save();
+		});
 
-        after(async () => {
-            await dbHandler.closeDatabase();
-        });
+		it('should throw an error if Role is not found', function(done) {
+			const params = {
+				roleId: new ObjectId().toString(),
+				subRoleId: defaultSubRole._id.toString(), 
+			};
 
-        beforeEach(async () => {
-            subRole1 = new Role({
-                name: 'subRole1',
-                label: 'subRole1Label'
-            })
-            subrRole1 = await subRole1.save();
+			RoleServices.removeSubRoleFromRole(params)
+				.then(() => {
+					assert.fail(err);
+				})
+				.catch(err => {
+					expect(err).to.have.property('message', 'Role not found');
+					expect(err).to.have.property('statusCode', 404);
+					done();
+				})
+				.catch(err => {
+					console.log(err);
+					assert.fail(err);
+					done();
+				});
+		});
 
-            subRole2 = new Role({
-                name: 'subRole2',
-                label: 'subRole2Label'
-            });
-            subRole2 = await subRole2.save();
+		it('should throw an error if subRole is not found', function(done) {
+			const params = {
+				roleId: defaultRole._id.toString(),
+				subRoleId: new ObjectId().toString(), 
+			};
 
-            parentRole = new Role({
-                name: 'parentRole',
-                label: 'parentRoleLabel',
-                subRoles: [subRole1._id]
-            });
-            parentRole = await parentRole.save();
-        });
+			RoleServices.removeSubRoleFromRole(params)
+				.then(() => {
+					assert.fail(err);
+				})
+				.catch(err => {
+					expect(err).to.have.property('message', 'Role to remove not found');
+					expect(err).to.have.property('statusCode', 404);
+					done();
+				})
+				.catch(err => {
+					console.log(err);
+					assert.fail(err);
+					done();
+				});
+		});
 
-        afterEach(async () => {
-            await dbHandler.clearDatabase();
-        });
+		it('should throw an error if subRole is not in subRoles', function(done) {
+			const params = {
+				roleId: defaultRole._id.toString(),
+				subRoleId: defaultSubRole._id.toString(), 
+			};
 
-        it('should throw an error if a role with given subRoleId does not exists', function (done) {
-            const params = { parentRoleId: parentRole._id.toString(), subRoleId: (new ObjectId()).toString() };
-            roleServices.removeSubRoleFromRole(params)
-                .then(result => {
-                    assert.fail('Error');
-                })
-                .catch(err => {
-                    expect(err).to.have.property('message', `Could not find sub role.`);
-                    expect(err).to.have.property('statusCode', 404);
-                    done();
-                })
-        });
+			defaultRole.subRoles = [];
+			defaultRole.save()
+				.then(() => {
+					RoleServices.removeSubRoleFromRole(params)
+						.then(() => {
+							assert.fail(err);
+						})
+						.catch(err => {
+							expect(err).to.have.property('message', 'Role not in subRoles');
+							expect(err).to.have.property('statusCode', 400);
+							done();
+						})
+				})
+				.catch(err => {
+					console.log(err);
+					assert.fail(err);
+					done();
+				});
+		});
+		
+		it('should remove Role from Role subRoles', function(done) {
+			const params = {
+				roleId: defaultRole._id.toString(),
+				subRoleId: defaultSubRole._id.toString(), 
+			};
 
-        it('should throw an error if a role with given parentRoleId does not exists', function (done) {
-            const params = { subRoleId: subRole1._id.toString(), parentRoleId: (new ObjectId()).toString() };
-            roleServices.removeSubRoleFromRole(params)
-                .then(result => {
-                    assert.fail('Error');
-                })
-                .catch(err => {
-                    expect(err).to.have.property('message', `Could not find parent role.`);
-                    expect(err).to.have.property('statusCode', 404);
-                    done();
-                })
-        });
+			RoleServices.removeSubRoleFromRole(params)
+				.then(() => {
+					Role.findOne({_id: defaultRole._id.toString()})
+						.then(newRole => {
+							expect(newRole).not.to.be.null;
+							expect(newRole.subRoles.length).to.be.equal(0);
+							expect(newRole.subRoles.includes(defaultSubRole._id.toString())).to.be.false;							
+							done();
+						})
+						.catch(err => {
+							console.log(err);
+							assert.fail(err);
+							done();
+						})
+				})
+				.catch(err => {
+					console.log(err);
+					assert.fail(err);
+					done();
+				});
+		});
+	});
 
-        it('should throw an error if a role is not in role', function (done) {
-            const params = { parentRoleId: parentRole._id.toString(), subRoleId: subRole2._id.toString() };
-            roleServices.removeSubRoleFromRole(params)
-                .then(result => {
-                    assert.fail('Error');
-                })
-                .catch(err => {
-                    expect(err).to.have.property('message', `Role not in role.`);
-                    expect(err).to.have.property('statusCode', 400);
-                    done();
-                })
-        });
-
-        it('should remove role from role', function (done) {
-            const params = { parentRoleId: parentRole._id.toString(), subRoleId: subRole1._id.toString() };
-            roleServices.removeSubRoleFromRole(params)
-                .then(result => {
-                    Role.findOne({ name: 'parentRole' })
-                        .then(updatedRole => {
-                            expect(updatedRole.subRoles.length).to.equal(0);
-                            done();
-                        })
-                })
-                .catch(err => {
-                    console.log(err);
-                    assert.fail('Error');
-                    done();
-                })
-        });
-
-    });
-
-    describe('#updateRoleInformations', function () {
-        let originalRole;
-        before(async () => {
-            await dbHandler.connect();
-        });
-
-        after(async () => {
-            await dbHandler.closeDatabase();
-        });
-
-        beforeEach(async () => {
-            originalRole = new Role({
-                name: 'originalName',
-                label: 'originalLabel',
-            });
-            originalRole = await originalRole.save();
-        });
-
-        afterEach(async () => {
-            await dbHandler.clearDatabase();
-        });
-
-        it('should throw an error if role to update is not found', function (done) {
-            const id = new ObjectId();
-            const params = { roleId: id.toString(), name: 'newName', label: 'newLabel' };
-            roleServices.updateRoleInformations(params)
-                .then(result => {
-                    assert.fail('Error');
-                })
-                .catch(err => {
-                    expect(err).to.have.property('message', `Could not find role.`);
-                    expect(err).to.have.property('statusCode', 404);
-                    done();
-                })
-        });
-
-        it('should update role name if name is provided', function (done) {
-            const params = { roleId: originalRole._id.toString(), name: 'newName' };
-            roleServices.updateRoleInformations(params)
-                .then(result => {
-                    expect(result).to.have.property('name', params.name);
-                    expect(result).to.have.property('label', originalRole.label);
-                    Role.findOne({ _id: originalRole._id })
-                        .then(newRole => {
-                            expect(newRole).to.have.property('name', params.name);
-                            expect(newRole).to.have.property('label', originalRole.label);
-                            done();
-                        })
-                })
-                .catch(err => {
-                    console.log(err);
-                    assert.fail('Error');
-                    done();
-                });
-        })
-
-        it('should update role label if label is provided', function (done) {
-            const params = { roleId: originalRole._id.toString(), label: 'newLabel' };
-            roleServices.updateRoleInformations(params)
-                .then(result => {
-                    expect(result).to.have.property('name', originalRole.name);
-                    expect(result).to.have.property('label', params.label);
-                    Role.findOne({ _id: originalRole._id })
-                        .then(newRole => {
-                            expect(newRole).to.have.property('name', originalRole.name);
-                            expect(newRole).to.have.property('label', params.label);
-                            done();
-                        })
-                })
-                .catch(err => {
-                    console.log(err);
-                    assert.fail('Error');
-                    done();
-                });
-        })
-
-        it('should update User details if everything is provided', function (done) {
-            const params = { roleId: originalRole._id.toString(), name: 'newName', label: 'newLabel' };
-            roleServices.updateRoleInformations(params)
-                .then(result => {
-                    expect(result).to.have.property('name', params.name);
-                    expect(result).to.have.property('label', params.label);
-                    Role.findOne({ _id: originalRole._id })
-                        .then(newRole => {
-                            expect(newRole).to.have.property('name', params.name);
-                            expect(newRole).to.have.property('label', params.label);
-                            done();
-                        })
-                })
-                .catch(err => {
-                    console.log(err);
-                    assert.fail('Error');
-                    done();
-                });
-        });
-
-    });
 });

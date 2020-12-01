@@ -1,4 +1,4 @@
-const Role = require('../model/role'); 
+const Role = require('../model/role');
 
 const convertRole2Object = r => {
 	return {
@@ -26,7 +26,7 @@ exports.deleteRole = async ({ roleId }) => {
 			if (!result) {
 				const error = new Error('Role to delete was not found');
 				error.statusCode = 404;
-				throw error;			
+				throw error;
 			}
 			return result;
 		})
@@ -76,7 +76,7 @@ exports.addSubRoleToRole = async ({ roleId, subRoleId }) => {
 			if (!role) {
 				const error = new Error('Role not found');
 				error.statusCode = 404;
-				throw error;				
+				throw error;
 			}
 			return role;
 		})
@@ -86,14 +86,14 @@ exports.addSubRoleToRole = async ({ roleId, subRoleId }) => {
 					if (!roleToAdd) {
 						const error = new Error('Role to add not found');
 						error.statusCode = 404;
-						throw error;				
+						throw error;
 					}
 					const roleObject = convertRole2Object(role); 
 					const index = roleObject.subRoles.indexOf(subRoleId);
 					if (index >= 0) {
 						const error = new Error('Role already in subRoles');
 						error.statusCode = 400;
-						throw error;											
+						throw error;
 					}
 					role.subRoles.push(subRoleId);
 					return role.save()
@@ -110,7 +110,7 @@ exports.removeSubRoleFromRole = async ({ roleId, subRoleId }) => {
 			if (!role) {
 				const error = new Error('Role not found');
 				error.statusCode = 404;
-				throw error;				
+				throw error;
 			}
 			return role;
 		})
@@ -120,14 +120,14 @@ exports.removeSubRoleFromRole = async ({ roleId, subRoleId }) => {
 					if (!roleToRemove) {
 						const error = new Error('Role to remove not found');
 						error.statusCode = 404;
-						throw error;				
+						throw error;
 					}
 					const roleObject = convertRole2Object(role); 
 					const index = roleObject.subRoles.indexOf(subRoleId);
 					if (index < 0) {
 						const error = new Error('Role not in subRoles');
 						error.statusCode = 400;
-						throw error;											
+						throw error;
 					}
 					role.subRoles.splice(index, 1);
 					return role.save()
@@ -145,7 +145,7 @@ exports.findRoleByName = async ({ name }) => {
 			if (!role) {
 	            const error = new Error('Could not find Role');
 	            error.statusCode = 404;
-	            throw error;				
+	            throw error;
 			}
 			return convertRole2Object(role);
 		});
@@ -157,7 +157,7 @@ exports.findRoleByLabel = async ({ label }) => {
 			if (!role) {
 	            const error = new Error('Could not find Role');
 	            error.statusCode = 404;
-	            throw error;				
+	            throw error;
 			}
 			return convertRole2Object(role);
 		});

@@ -81,8 +81,8 @@ exports.addSubRoleToRole = async ({ roleId, subRoleId }) => {
 		})
 		.then(role => {
 			return Role.findOne({ _id: subRoleId })
-				.then(roleToAdd => {
-					if (!roleToAdd) {
+				.then(subRoleToAdd => {
+					if (!subRoleToAdd) {
 						const error = new Error('Role to add not found');
 						error.statusCode = 404;
 						throw error;

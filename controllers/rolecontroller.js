@@ -1,98 +1,98 @@
 const RoleServices = require('../services/roleservices');
 
 exports.createRole = async (req, res, next) => {
-	const name = req.body.name;	
-	const label = req.body.label;	
-	if (!name || !label) {        
+	const name = req.body.name;
+	const label = req.body.label;
+	if (!name || !label) {
 		const error = new Error('Bad arguments');
-        error.statusCode = 400;
-        next(error);
+		error.statusCode = 400;
+		next(error);
 		return null;
 	};
 
-	return RoleServices.createRole({ name, label})        
+	return RoleServices.createRole({ name, label })
 		.then(response => {
-            res.status(201).json({ message: 'Role created', data: response });
-            return null;
-        })
-        .catch(err => {
-            if (!err.statusCode) {
-                err.statusCode = 500;
-            }
-            next(err);
+			res.status(201).json({ message: 'Role created', data: response });
 			return null;
-        });
+		})
+		.catch(err => {
+			if (!err.statusCode) {
+				err.statusCode = 500;
+			}
+			next(err);
+			return null;
+		});
 };
 
 
 exports.deleteRole = async (req, res, next) => {
 	const roleId = req.body.roleId;
 	if (!roleId) {
-        const error = new Error('Bad arguments');
-        error.statusCode = 400;
-        next(error);	
+		const error = new Error('Bad arguments');
+		error.statusCode = 400;
+		next(error);
 		return null;
 	}
 
 	return RoleServices.deleteRole({ roleId })
-        .then(response => {
-            res.status(200).json({ message: 'Role deleted', data: response });
-            return null;
-        })
-        .catch(err => {
-            if (!err.statusCode) {
-                err.statusCode = 500;
-            }
-            next(err);
+		.then(response => {
+			res.status(200).json({ message: 'Role deleted', data: response });
 			return null;
-        });
+		})
+		.catch(err => {
+			if (!err.statusCode) {
+				err.statusCode = 500;
+			}
+			next(err);
+			return null;
+		});
 };
 
 exports.getRoles = async (req, res, next) => {
 	const page = req.query.page;
-    const perPage = req.query.perPage;
-    if (!page || !perPage) {
-        const error = new Error('Bad arguments.');
-        error.statusCode = 400;
-        next(error);
+	const perPage = req.query.perPage;
+	if (!page || !perPage) {
+		const error = new Error('Bad arguments.');
+		error.statusCode = 400;
+		next(error);
 		return null;
-    }
+	}
 
-    return RoleServices.getRoles({ page, perPage })
-        .then(response => {
-            res.status(200).json(response);
-            return null;
-        })
-        .catch(err => {
-            if (!err.statusCode) {
-                err.statusCode = 500;
-            }
-            next(err);
+	return RoleServices.getRoles({ page, perPage })
+		.then(response => {
+			res.status(200).json(response);
 			return null;
-        });
+		})
+		.catch(err => {
+			if (!err.statusCode) {
+				err.statusCode = 500;
+			}
+			next(err);
+			return null;
+		});
 };
 
 exports.getRole = async (req, res, next) => {
-	const roleId = req.body.roleId;
-    if (!roleId) {
-        const error = new Error('Bad arguments.');
-        error.statusCode = 400;
-        next(error);
+	const roleId = req.query.roleId;
+	if (!roleId) {
+		const error = new Error('Bad arguments.');
+		error.statusCode = 400;
+		next(error);
 		return null;
-    }
+	}
 
-    return RoleServices.getRole({ roleId })
-        .then(response => {
-            res.status(200).json(response);
-            return null;
-        })
-        .catch(err => {
-            if (!err.statusCode) {
-                err.statusCode = 500;
-            }
-            next(err);
+	return RoleServices.getRole({ roleId })
+		.then(response => {
+			res.status(200).json(response);
 			return null;
-        });
+		})
+		.catch(err => {
+			if (!err.statusCode) {
+				err.statusCode = 500;
+			}
+			next(err);
+			return null;
+		});
 };
 
 exports.addSubRoleToRole = async (req, res, next) => {
@@ -103,7 +103,7 @@ exports.addSubRoleToRole = async (req, res, next) => {
 		error.statusCode = 400;
 		next(error);
 		return null;
-	} 
+	}
 
 	return RoleServices.addSubRoleToRole({ roleId: roleId, subRoleId: subRoleId })
 		.then(response => {
@@ -127,7 +127,7 @@ exports.removeSubRoleFromRole = async (req, res, next) => {
 		error.statusCode = 400;
 		next(error);
 		return null;
-	} 
+	}
 
 	return RoleServices.removeSubRoleFromRole({ roleId: roleId, subRoleId: subRoleId })
 		.then(response => {
@@ -145,7 +145,7 @@ exports.removeSubRoleFromRole = async (req, res, next) => {
 
 
 exports.findRoleByName = async (req, res, next) => {
-	const name = req.body.name
+	const name = req.query.name
 	if (!name) {
 		const error = new Error('Bad arguments.');
 		error.statusCode = 400;
@@ -168,7 +168,7 @@ exports.findRoleByName = async (req, res, next) => {
 };
 
 exports.findRoleByLabel = async (req, res, next) => {
-	const label = req.body.label
+	const label = req.query.label
 	if (!label) {
 		const error = new Error('Bad arguments.');
 		error.statusCode = 400;

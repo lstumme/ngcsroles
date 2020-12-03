@@ -1,74 +1,74 @@
-const {expect, assert} = require('chai');
+const { expect, assert } = require('chai');
 const sinon = require('sinon');
-const RoleController = require('../controller/rolecontroller');
+const RoleController = require('../controllers/rolecontroller');
 const RoleServices = require('../services/roleservices');
 
 describe('Role Controller', function () {
-	describe('#createRole function', function () {
-		beforeEach(function () {
-			sinon.stub(RoleServices, 'createRole');
-		});
+    describe('#createRole function', function () {
+        beforeEach(function () {
+            sinon.stub(RoleServices, 'createRole');
+        });
 
-		afterEach(function () {
-			RoleServices.createRole.restore();
-		});
+        afterEach(function () {
+            RoleServices.createRole.restore();
+        });
 
-		it('should call next(err) if name is not specified', function (done) {
-			const req = {
-				body: {
-					label: 'defaultLabel', 
-				}
-			};
-			let nextCalled = false;
-			RoleController.createRole(req, {}, (err) => {
-				expect(err).not.to.be.null;
-				expect(err).to.have.property('statusCode', 400);
-				nextCalled = true;
-			})
-				.then(result => {
-					expect(nextCalled).to.be.true;
-					expect(result).to.be.null;
-					done();
-				})
-				.catch(err => {
-					console.log(err);
-					assert.fail('Error thrown');
-					done();
-				});
-		});
+        it('should call next(err) if name is not specified', function (done) {
+            const req = {
+                body: {
+                    label: 'defaultLabel',
+                }
+            };
+            let nextCalled = false;
+            RoleController.createRole(req, {}, (err) => {
+                expect(err).not.to.be.null;
+                expect(err).to.have.property('statusCode', 400);
+                nextCalled = true;
+            })
+                .then(result => {
+                    expect(nextCalled).to.be.true;
+                    expect(result).to.be.null;
+                    done();
+                })
+                .catch(err => {
+                    console.log(err);
+                    assert.fail('Error thrown');
+                    done();
+                });
+        });
 
-		it('should call next(err) if label is not specified', function (done) {
-			const req = {
-				body: {
-					name: 'defaultName', 
-				}
-			};
-			let nextCalled = false;
-			RoleController.createRole(req, {}, (err) => {
-				expect(err).not.to.be.null;
-				expect(err).to.have.property('statusCode', 400);
-				nextCalled = true;
-			})
-				.then(result => {
-					expect(nextCalled).to.be.true;
-					expect(result).to.be.null;
-					done();
-				})
-				.catch(err => {
-					console.log(err);
-					assert.fail('Error thrown');
-					done();
-				});
-		});
+        it('should call next(err) if label is not specified', function (done) {
+            const req = {
+                body: {
+                    name: 'defaultName',
+                }
+            };
+            let nextCalled = false;
+            RoleController.createRole(req, {}, (err) => {
+                expect(err).not.to.be.null;
+                expect(err).to.have.property('statusCode', 400);
+                nextCalled = true;
+            })
+                .then(result => {
+                    expect(nextCalled).to.be.true;
+                    expect(result).to.be.null;
+                    done();
+                })
+                .catch(err => {
+                    console.log(err);
+                    assert.fail('Error thrown');
+                    done();
+                });
+        });
 
 
-		it('should return an object if Role creation succeed', function (done) {
-			const req = {
-				body: {
-					name: 'defaultName', 
-					label: 'defaultLabel', 
-				}
-			};
+        it('should return an object if Role creation succeed', function (done) {
+            const req = {
+                body: {
+                    name: 'defaultName',
+                    label: 'defaultLabel',
+                }
+            };
 
             const res = {
                 statusCode: 0,
@@ -83,125 +83,125 @@ describe('Role Controller', function () {
                 }
             };
 
-			RoleServices.createRole.returns(new Promise((resolve, reject) => {
-				resolve({ 
-					roleId: 'roleIdValue',
-					name: req.body.name, 
-					label: req.body.label, 
-				});
-			}));
+            RoleServices.createRole.returns(new Promise((resolve, reject) => {
+                resolve({
+                    roleId: 'roleIdValue',
+                    name: req.body.name,
+                    label: req.body.label,
+                });
+            }));
 
-			RoleController.createRole(req, res, () => {})
-				.then(result => {
-	                expect(res).to.have.property('statusCode', 201);
-	                expect(res.jsonObject).to.have.property('message', 'Role created');
-	                expect(res.jsonObject.data).to.have.property('roleId', 'roleIdValue');
-					expect(res.jsonObject.data).to.have.property('name', req.body.name); 
-					expect(res.jsonObject.data).to.have.property('label', req.body.label); 
-					done();				
-				})
-				.catch(err => {
-					console.log(err);
-				});		
-		});
-        
-		it('should call next(err) adding default statusCode if not specified', function (done) {
-			const req = {
-				body: {
-					name: 'defaultName', 
-					label: 'defaultLabel', 
-				}
-			};
+            RoleController.createRole(req, res, () => { })
+                .then(result => {
+                    expect(res).to.have.property('statusCode', 201);
+                    expect(res.jsonObject).to.have.property('message', 'Role created');
+                    expect(res.jsonObject.data).to.have.property('roleId', 'roleIdValue');
+                    expect(res.jsonObject.data).to.have.property('name', req.body.name);
+                    expect(res.jsonObject.data).to.have.property('label', req.body.label);
+                    done();
+                })
+                .catch(err => {
+                    console.log(err);
+                });
+        });
 
-			RoleServices.createRole.returns(new Promise((resolve, reject) => {
+        it('should call next(err) adding default statusCode if not specified', function (done) {
+            const req = {
+                body: {
+                    name: 'defaultName',
+                    label: 'defaultLabel',
+                }
+            };
+
+            RoleServices.createRole.returns(new Promise((resolve, reject) => {
                 throw new Error('Undefined Error');
             }));
-			
-			let nextCalled = false;
-			RoleController.createRole(req, {}, (err) => {
-				expect(err).not.to.be.null;
-				expect(err).to.have.property('statusCode', 500);
-				nextCalled = true;
-			})
-				.then(result => {
-					expect(nextCalled).to.be.true;
-					expect(result).to.be.null;
-					done();
-				})
-				.catch(err => {
-					console.log(err);
-					assert.fail('Error thrown');
-					done();
-				});
-		});
+
+            let nextCalled = false;
+            RoleController.createRole(req, {}, (err) => {
+                expect(err).not.to.be.null;
+                expect(err).to.have.property('statusCode', 500);
+                nextCalled = true;
+            })
+                .then(result => {
+                    expect(nextCalled).to.be.true;
+                    expect(result).to.be.null;
+                    done();
+                })
+                .catch(err => {
+                    console.log(err);
+                    assert.fail('Error thrown');
+                    done();
+                });
+        });
 
         it('should call next(err) keeping specified statusCode', function (done) {
-			const req = {
-				body: {
-					name: 'defaultName', 
-					label: 'defaultLabel', 
-				}
-			};
+            const req = {
+                body: {
+                    name: 'defaultName',
+                    label: 'defaultLabel',
+                }
+            };
 
-			RoleServices.createRole.returns(new Promise((resolve, reject) => {
+            RoleServices.createRole.returns(new Promise((resolve, reject) => {
                 const error = new Error('Undefined Error');
                 error.statusCode = 400;
                 throw error;
             }));
 
-			let nextCalled = false;
-			RoleController.createRole(req, {}, (err) => {
-				expect(err).not.to.be.null;
-				expect(err).to.have.property('statusCode', 400);
-				nextCalled = true;
-			})
-				.then(result => {
-					expect(nextCalled).to.be.true;
-					expect(result).to.be.null;
-					done();
-				})
-				.catch(err => {
-					console.log(err);
-					assert.fail('Error thrown');
-					done();
-				});
-		});
-	});
-
-	describe('#deleteRole function', function () {
-		beforeEach(function () {
-			sinon.stub(RoleServices, 'deleteRole');
-		});
-
-		afterEach(function () {
-			RoleServices.deleteRole.restore();
-		});
-
-        it('should call next(err) if role is not specified', function (done) {
-			const req = {
-				body: {
-				}
-			};
-
-			let nextCalled = false;
-           	RoleController.deleteRole(req, {}, (err) => {
+            let nextCalled = false;
+            RoleController.createRole(req, {}, (err) => {
                 expect(err).not.to.be.null;
                 expect(err).to.have.property('statusCode', 400);
                 nextCalled = true;
             })
-				.then(result => {
-					expect(nextCalled).to.be.true;
-					expect(result).to.be.null;
-					done();
-				})
+                .then(result => {
+                    expect(nextCalled).to.be.true;
+                    expect(result).to.be.null;
+                    done();
+                })
                 .catch(err => {
-					console.log(err);
+                    console.log(err);
                     assert.fail('Error thrown');
-					done();
+                    done();
                 });
-		});
+        });
+    });
 
-       it('should return a roleId if Role deletion succeed', function (done) {
+    describe('#deleteRole function', function () {
+        beforeEach(function () {
+            sinon.stub(RoleServices, 'deleteRole');
+        });
+
+        afterEach(function () {
+            RoleServices.deleteRole.restore();
+        });
+
+        it('should call next(err) if role is not specified', function (done) {
+            const req = {
+                body: {
+                }
+            };
+
+            let nextCalled = false;
+            RoleController.deleteRole(req, {}, (err) => {
+                expect(err).not.to.be.null;
+                expect(err).to.have.property('statusCode', 400);
+                nextCalled = true;
+            })
+                .then(result => {
+                    expect(nextCalled).to.be.true;
+                    expect(result).to.be.null;
+                    done();
+                })
+                .catch(err => {
+                    console.log(err);
+                    assert.fail('Error thrown');
+                    done();
+                });
+        });
+
+        it('should return a roleId if Role deletion succeed', function (done) {
             const req = {
                 body: {
                     roleId: 'roleId'
@@ -225,16 +225,16 @@ describe('Role Controller', function () {
             }));
 
             RoleController.deleteRole(req, res, () => { })
-				.then(result => {
-	                expect(res).to.have.property('statusCode', 200);
-	                expect(res.jsonObject).to.have.property('message', 'Role deleted');
-	                expect(res.jsonObject.data).to.have.property('roleId', req.body.roleId)
-	                done();
-            	})
-				.catch(err=> {
-					console.log(err);
-					done();				
-				});
+                .then(result => {
+                    expect(res).to.have.property('statusCode', 200);
+                    expect(res.jsonObject).to.have.property('message', 'Role deleted');
+                    expect(res.jsonObject.data).to.have.property('roleId', req.body.roleId)
+                    done();
+                })
+                .catch(err => {
+                    console.log(err);
+                    done();
+                });
         });
 
         it('should call next(err) adding default statusCode if not specified', function (done) {
@@ -249,25 +249,25 @@ describe('Role Controller', function () {
                 throw error;
             }));
 
-			let nextCalled = false;
-            RoleController.deleteRole(req, {}, (err) => { 
+            let nextCalled = false;
+            RoleController.deleteRole(req, {}, (err) => {
                 expect(err).not.to.be.null;
                 expect(err).to.have.property('statusCode', 500);
                 nextCalled = true;
             })
-				.then(result => {
-					expect(nextCalled).to.be.true;
-					expect(result).to.be.null;
-					done();
-				})
+                .then(result => {
+                    expect(nextCalled).to.be.true;
+                    expect(result).to.be.null;
+                    done();
+                })
                 .catch(err => {
-					console.log(err);
+                    console.log(err);
                     assert.fail('Error thrown');
-					done();
+                    done();
                 });
-		});
+        });
 
-       	it('should call next(err) keeping specified statusCode', function (done) {
+        it('should call next(err) keeping specified statusCode', function (done) {
             const req = {
                 body: {
                     roleId: 'roleId'
@@ -280,25 +280,25 @@ describe('Role Controller', function () {
                 throw error;
             }));
 
-			let nextCalled = false;
-            RoleController.deleteRole(req, {}, (err) => { 
+            let nextCalled = false;
+            RoleController.deleteRole(req, {}, (err) => {
                 expect(err).not.to.be.null;
                 expect(err).to.have.property('statusCode', 400);
                 nextCalled = true;
             })
-				.then(result => {
-					expect(nextCalled).to.be.true;
-					expect(result).to.be.null;
-					done();
-				})
+                .then(result => {
+                    expect(nextCalled).to.be.true;
+                    expect(result).to.be.null;
+                    done();
+                })
                 .catch(err => {
-					console.log(err);
+                    console.log(err);
                     assert.fail('Error thrown');
-					done();
+                    done();
                 });
         });
-	});
-	describe('#getRoles function', function () {
+    });
+    describe('#getRoles function', function () {
         beforeEach(function () {
             sinon.stub(RoleServices, 'getRoles');
         });
@@ -310,57 +310,58 @@ describe('Role Controller', function () {
         it('should call next(err) if no page specified', function (done) {
             const req = {
                 query: {
-                    perPage: '20'
+                    perPage: '20',
                 }
             }
-			let nextCalled = false;
+            let nextCalled = false;
             RoleController.getRoles(req, {}, (err) => {
                 expect(err).not.to.be.null;
                 expect(err).to.have.property('statusCode', 400);
                 nextCalled = true;
             })
                 .then(response => {
-					expect(response).to.be.null;
-					expect(nextCalled).to.be.true;
-					done();
+                    expect(response).to.be.null;
+                    expect(nextCalled).to.be.true;
+                    done();
                 })
                 .catch(err => {
-					console.log(err);
+                    console.log(err);
                     assert.fail(err);
-					done();
+                    done();
                 });
         });
 
         it('should call next(err) if no perPage specified', function (done) {
             const req = {
                 query: {
-                    page: '1'
+                    page: '1',
                 }
             }
 
-			let nextCalled = false;
+            let nextCalled = false;
             RoleController.getRoles(req, {}, (err) => {
                 expect(err).not.to.be.null;
                 expect(err).to.have.property('statusCode', 400);
                 nextCalled = true;
             })
                 .then(response => {
-					expect(response).to.be.null;
-					expect(nextCalled).to.be.true;
-					done();
+                    expect(response).to.be.null;
+                    expect(nextCalled).to.be.true;
+                    done();
                 })
                 .catch(err => {
-					console.log(err);
+                    console.log(err);
                     assert.fail(err);
-					done();
+                    done();
                 });
         });
+
 
         it('should return an array if request succeed', function (done) {
             const req = {
                 query: {
                     page: '1',
-                    perPage: '10'
+                    perPage: '10',
                 }
             }
             const res = {
@@ -384,42 +385,42 @@ describe('Role Controller', function () {
             }));
 
             RoleController.getRoles(req, res, () => { })
-				.then(result => {
-	                expect(res).to.have.property('statusCode', 200);
-	                expect(res.jsonObject).to.have.lengthOf(3);
-	                done();
-	            })
-				.catch(err => {
-					console.log(err);
-					assert.fail(err);
-					done();
-				});
+                .then(result => {
+                    expect(res).to.have.property('statusCode', 200);
+                    expect(res.jsonObject).to.have.lengthOf(3);
+                    done();
+                })
+                .catch(err => {
+                    console.log(err);
+                    assert.fail(err);
+                    done();
+                });
         });
 
         it('should call next(err) adding default statusCode if not specified', function (done) {
             const req = {
                 query: {
                     page: '1',
-                    perPage: '10'
+                    perPage: '10',
                 }
             }
             RoleServices.getRoles.returns(new Promise((resolve, reject) => {
                 throw new Error('Undefined Error');
             }));
 
-			let nextCalled = false;
+            let nextCalled = false;
             RoleController.getRoles(req, {}, (err) => {
                 expect(err).not.to.be.null;
                 expect(err).to.have.property('statusCode', 500);
                 nextCalled = true;
             })
                 .then(response => {
-					expect(response).to.be.null;
-					expect(nextCalled).to.be.true;
-					done();
+                    expect(response).to.be.null;
+                    expect(nextCalled).to.be.true;
+                    done();
                 })
                 .catch(err => {
-					console.log(err);
+                    console.log(err);
                     assert.fail(err);
                 });
         });
@@ -428,7 +429,7 @@ describe('Role Controller', function () {
             const req = {
                 query: {
                     page: '1',
-                    perPage: '10'
+                    perPage: '10',
                 }
             }
             RoleServices.getRoles.returns(new Promise((resolve, reject) => {
@@ -437,58 +438,58 @@ describe('Role Controller', function () {
                 throw error;
             }));
 
-			let nextCalled = false;
+            let nextCalled = false;
             RoleController.getRoles(req, {}, (err) => {
                 expect(err).not.to.be.null;
                 expect(err).to.have.property('statusCode', 400);
                 nextCalled = true;
             })
                 .then(response => {
-					expect(response).to.be.null;
-					expect(nextCalled).to.be.true;
-					done();
+                    expect(response).to.be.null;
+                    expect(nextCalled).to.be.true;
+                    done();
                 })
                 .catch(err => {
-					console.log(err);
+                    console.log(err);
                     assert.fail(err);
                 });
-        });		
-	});
-	describe('#getRole function', function () {
-		beforeEach(function () {
-			sinon.stub(RoleServices, 'getRole');
-		});
+        });
+    });
+    describe('#getRole function', function () {
+        beforeEach(function () {
+            sinon.stub(RoleServices, 'getRole');
+        });
 
-		afterEach(function () {
-			RoleServices.getRole.restore();
-		});
+        afterEach(function () {
+            RoleServices.getRole.restore();
+        });
 
         it('should call next(err) if no roleId specified', function (done) {
             const req = {
-                body: {
+                query: {
                 }
             }
-			let nextCalled = false;
+            let nextCalled = false;
             RoleController.getRole(req, {}, (err) => {
                 expect(err).not.to.be.null;
                 expect(err).to.have.property('statusCode', 400);
                 nextCalled = true;
             })
                 .then(response => {
-					expect(response).to.be.null;
-					expect(nextCalled).to.be.true;
-					done();
+                    expect(response).to.be.null;
+                    expect(nextCalled).to.be.true;
+                    done();
                 })
                 .catch(err => {
-					console.log(err);
+                    console.log(err);
                     assert.fail('Error thrown');
-					done();
+                    done();
                 });
         });
 
         it('should return an object if request succeed', function (done) {
             const req = {
-                body: {
+                query: {
                     roleId: 'abc',
                 }
             }
@@ -509,21 +510,21 @@ describe('Role Controller', function () {
             }));
 
             RoleController.getRole(req, res, () => { })
-				.then(result => {
-	                expect(res).to.have.property('statusCode', 200);
-	                expect(res.jsonObject).to.have.property('roleId', 'abc');
-	                done();
-	            })
-				.catch(err => {
-					console.log(err);
-					assert.fail(err);
-					done();
-				});
+                .then(result => {
+                    expect(res).to.have.property('statusCode', 200);
+                    expect(res.jsonObject).to.have.property('roleId', 'abc');
+                    done();
+                })
+                .catch(err => {
+                    console.log(err);
+                    assert.fail(err);
+                    done();
+                });
         });
 
         it('should call next(err) adding default statusCode if not specified', function (done) {
             const req = {
-                body: {
+                query: {
                     roleId: 'abc',
                 }
             }
@@ -531,27 +532,27 @@ describe('Role Controller', function () {
                 throw new Error('Undefined Error');
             }));
 
-			let nextCalled = false;
+            let nextCalled = false;
             RoleController.getRole(req, {}, (err) => {
                 expect(err).not.to.be.null;
                 expect(err).to.have.property('statusCode', 500);
                 nextCalled = true;
             })
                 .then(response => {
-					expect(response).to.be.null;
-					expect(nextCalled).to.be.true;
-					done();
+                    expect(response).to.be.null;
+                    expect(nextCalled).to.be.true;
+                    done();
                 })
                 .catch(err => {
-					console.log(err);
+                    console.log(err);
                     assert.fail('Error thrown');
-					done();
+                    done();
                 });
         });
 
         it('should call next(err) keeping specified statusCode', function (done) {
             const req = {
-                body: {
+                query: {
                     roleId: 'abc',
                 }
             }
@@ -561,61 +562,61 @@ describe('Role Controller', function () {
                 throw error;
             }));
 
-			let nextCalled = false;
+            let nextCalled = false;
             RoleController.getRole(req, {}, (err) => {
                 expect(err).not.to.be.null;
                 expect(err).to.have.property('statusCode', 400);
                 nextCalled = true;
             })
                 .then(response => {
-					expect(response).to.be.null;
-					expect(nextCalled).to.be.true;
-					done();
+                    expect(response).to.be.null;
+                    expect(nextCalled).to.be.true;
+                    done();
                 })
                 .catch(err => {
-					console.log(err);
+                    console.log(err);
                     assert.fail('Error thrown');
-					done();
+                    done();
                 });
         });
-	});
-	describe('#findRoleByName function', function () {
-		beforeEach(function () {
-			sinon.stub(RoleServices, 'findRoleByName');
-		});
+    });
+    describe('#findRoleByName function', function () {
+        beforeEach(function () {
+            sinon.stub(RoleServices, 'findRoleByName');
+        });
 
-		afterEach(function () {
-			RoleServices.findRoleByName.restore();
-		});
+        afterEach(function () {
+            RoleServices.findRoleByName.restore();
+        });
 
-		it('should call next(err) if name is not specified', function (done) {
+        it('should call next(err) if name is not specified', function (done) {
             const req = {
-                body: {
+                query: {
                 }
             }
 
-			let nextCalled = false;
+            let nextCalled = false;
             RoleController.findRoleByName(req, {}, (err) => {
                 expect(err).not.to.be.null;
                 expect(err).to.have.property('statusCode', 400);
                 nextCalled = true;
             })
                 .then(response => {
-					expect(response).to.be.null;
-					expect(nextCalled).to.be.true;
-					done();
+                    expect(response).to.be.null;
+                    expect(nextCalled).to.be.true;
+                    done();
                 })
                 .catch(err => {
-					console.log(err);
+                    console.log(err);
                     assert.fail('Error thrown');
-					done();
+                    done();
                 });
-		
-		});
+
+        });
 
         it('should return an object if request succeed', function (done) {
             const req = {
-                body: {
+                query: {
                     name: 'name1',
                 }
             }
@@ -632,29 +633,29 @@ describe('Role Controller', function () {
                 }
             };
             RoleServices.findRoleByName.returns(new Promise((resolve, reject) => {
-                resolve({ 
-					roleId: 'abc',
-					name: 'name1', 
-				});
+                resolve({
+                    roleId: 'abc',
+                    name: 'name1',
+                });
             }));
 
             RoleController.findRoleByName(req, res, () => { })
-				.then(result => {
-	                expect(res).to.have.property('statusCode', 200);
-	                expect(res.jsonObject).to.have.property('roleId', 'abc');
-					expect(res.jsonObject).to.have.property('name', 'name1');
-	                done();
-	            })
-				.catch(err => {
-					console.log(err);
-					assert.fail(err);
-					done();
-				});
+                .then(result => {
+                    expect(res).to.have.property('statusCode', 200);
+                    expect(res.jsonObject).to.have.property('roleId', 'abc');
+                    expect(res.jsonObject).to.have.property('name', 'name1');
+                    done();
+                })
+                .catch(err => {
+                    console.log(err);
+                    assert.fail(err);
+                    done();
+                });
         });
 
         it('should call next(err) adding default statusCode if not specified', function (done) {
             const req = {
-                body: {
+                query: {
                     name: 'name1',
                 }
             }
@@ -662,27 +663,27 @@ describe('Role Controller', function () {
                 throw new Error('Undefined Error');
             }));
 
-			let nextCalled = false;
+            let nextCalled = false;
             RoleController.findRoleByName(req, {}, (err) => {
                 expect(err).not.to.be.null;
                 expect(err).to.have.property('statusCode', 500);
                 nextCalled = true;
             })
                 .then(response => {
-					expect(response).to.be.null;
-					expect(nextCalled).to.be.true;
-					done();
+                    expect(response).to.be.null;
+                    expect(nextCalled).to.be.true;
+                    done();
                 })
                 .catch(err => {
-					console.log(err);
+                    console.log(err);
                     assert.fail('Error thrown');
-					done();
+                    done();
                 });
         });
 
         it('should call next(err) keeping specified statusCode', function (done) {
             const req = {
-                body: {
+                query: {
                     name: 'name1',
                 }
             }
@@ -692,61 +693,61 @@ describe('Role Controller', function () {
                 throw error;
             }));
 
-			let nextCalled = false;
+            let nextCalled = false;
             RoleController.findRoleByName(req, {}, (err) => {
                 expect(err).not.to.be.null;
                 expect(err).to.have.property('statusCode', 400);
                 nextCalled = true;
             })
                 .then(response => {
-					expect(response).to.be.null;
-					expect(nextCalled).to.be.true;
-					done();
+                    expect(response).to.be.null;
+                    expect(nextCalled).to.be.true;
+                    done();
                 })
                 .catch(err => {
-					console.log(err);
+                    console.log(err);
                     assert.fail('Error thrown');
-					done();
+                    done();
                 });
         });
-	});
-	describe('#findRoleByLabel function', function () {
-		beforeEach(function () {
-			sinon.stub(RoleServices, 'findRoleByLabel');
-		});
+    });
+    describe('#findRoleByLabel function', function () {
+        beforeEach(function () {
+            sinon.stub(RoleServices, 'findRoleByLabel');
+        });
 
-		afterEach(function () {
-			RoleServices.findRoleByLabel.restore();
-		});
+        afterEach(function () {
+            RoleServices.findRoleByLabel.restore();
+        });
 
-		it('should call next(err) if label is not specified', function (done) {
+        it('should call next(err) if label is not specified', function (done) {
             const req = {
-                body: {
+                query: {
                 }
             }
 
-			let nextCalled = false;
+            let nextCalled = false;
             RoleController.findRoleByLabel(req, {}, (err) => {
                 expect(err).not.to.be.null;
                 expect(err).to.have.property('statusCode', 400);
                 nextCalled = true;
             })
                 .then(response => {
-					expect(response).to.be.null;
-					expect(nextCalled).to.be.true;
-					done();
+                    expect(response).to.be.null;
+                    expect(nextCalled).to.be.true;
+                    done();
                 })
                 .catch(err => {
-					console.log(err);
+                    console.log(err);
                     assert.fail('Error thrown');
-					done();
+                    done();
                 });
-		
-		});
+
+        });
 
         it('should return an object if request succeed', function (done) {
             const req = {
-                body: {
+                query: {
                     label: 'label1',
                 }
             }
@@ -763,29 +764,29 @@ describe('Role Controller', function () {
                 }
             };
             RoleServices.findRoleByLabel.returns(new Promise((resolve, reject) => {
-                resolve({ 
-					roleId: 'abc',
-					label: 'label1', 
-				});
+                resolve({
+                    roleId: 'abc',
+                    label: 'label1',
+                });
             }));
 
             RoleController.findRoleByLabel(req, res, () => { })
-				.then(result => {
-	                expect(res).to.have.property('statusCode', 200);
-	                expect(res.jsonObject).to.have.property('roleId', 'abc');
-					expect(res.jsonObject).to.have.property('label', 'label1');
-	                done();
-	            })
-				.catch(err => {
-					console.log(err);
-					assert.fail(err);
-					done();
-				});
+                .then(result => {
+                    expect(res).to.have.property('statusCode', 200);
+                    expect(res.jsonObject).to.have.property('roleId', 'abc');
+                    expect(res.jsonObject).to.have.property('label', 'label1');
+                    done();
+                })
+                .catch(err => {
+                    console.log(err);
+                    assert.fail(err);
+                    done();
+                });
         });
 
         it('should call next(err) adding default statusCode if not specified', function (done) {
             const req = {
-                body: {
+                query: {
                     label: 'label1',
                 }
             }
@@ -793,27 +794,27 @@ describe('Role Controller', function () {
                 throw new Error('Undefined Error');
             }));
 
-			let nextCalled = false;
+            let nextCalled = false;
             RoleController.findRoleByLabel(req, {}, (err) => {
                 expect(err).not.to.be.null;
                 expect(err).to.have.property('statusCode', 500);
                 nextCalled = true;
             })
                 .then(response => {
-					expect(response).to.be.null;
-					expect(nextCalled).to.be.true;
-					done();
+                    expect(response).to.be.null;
+                    expect(nextCalled).to.be.true;
+                    done();
                 })
                 .catch(err => {
-					console.log(err);
+                    console.log(err);
                     assert.fail('Error thrown');
-					done();
+                    done();
                 });
         });
 
         it('should call next(err) keeping specified statusCode', function (done) {
             const req = {
-                body: {
+                query: {
                     label: 'label1',
                 }
             }
@@ -823,91 +824,91 @@ describe('Role Controller', function () {
                 throw error;
             }));
 
-			let nextCalled = false;
+            let nextCalled = false;
             RoleController.findRoleByLabel(req, {}, (err) => {
                 expect(err).not.to.be.null;
                 expect(err).to.have.property('statusCode', 400);
                 nextCalled = true;
             })
                 .then(response => {
-					expect(response).to.be.null;
-					expect(nextCalled).to.be.true;
-					done();
+                    expect(response).to.be.null;
+                    expect(nextCalled).to.be.true;
+                    done();
                 })
                 .catch(err => {
-					console.log(err);
+                    console.log(err);
                     assert.fail('Error thrown');
-					done();
+                    done();
                 });
         });
-	});
+    });
 
-	describe('#addSubRoleToRole function', function () {
-		beforeEach(function () {
-			sinon.stub(RoleServices, 'addSubRoleToRole');
-		});
+    describe('#addSubRoleToRole function', function () {
+        beforeEach(function () {
+            sinon.stub(RoleServices, 'addSubRoleToRole');
+        });
 
-		afterEach(function () {
-			RoleServices.addSubRoleToRole.restore();
-		});
+        afterEach(function () {
+            RoleServices.addSubRoleToRole.restore();
+        });
 
-		it('should call next(err) if RoleId is not specified', function (done) {
+        it('should call next(err) if RoleId is not specified', function (done) {
             const req = {
                 body: {
-					subRoleId: 'subRoleId', 
+                    subRoleId: 'subRoleId',
                 }
             }
 
-			let nextCalled = false;
+            let nextCalled = false;
             RoleController.addSubRoleToRole(req, {}, (err) => {
                 expect(err).not.to.be.null;
                 expect(err).to.have.property('statusCode', 400);
                 nextCalled = true;
             })
                 .then(response => {
-					expect(response).to.be.null;
-					expect(nextCalled).to.be.true;
-					done();
+                    expect(response).to.be.null;
+                    expect(nextCalled).to.be.true;
+                    done();
                 })
                 .catch(err => {
-					console.log(err);
+                    console.log(err);
                     assert.fail('Error thrown');
-					done();
+                    done();
                 });
-		
-		});
 
-		it('should call next(err) if subRoleId is not specified', function (done) {
+        });
+
+        it('should call next(err) if subRoleId is not specified', function (done) {
             const req = {
                 body: {
-					roleId: 'roleId', 
+                    roleId: 'roleId',
                 }
             }
 
-			let nextCalled = false;
+            let nextCalled = false;
             RoleController.addSubRoleToRole(req, {}, (err) => {
                 expect(err).not.to.be.null;
                 expect(err).to.have.property('statusCode', 400);
                 nextCalled = true;
             })
                 .then(response => {
-					expect(response).to.be.null;
-					expect(nextCalled).to.be.true;
-					done();
+                    expect(response).to.be.null;
+                    expect(nextCalled).to.be.true;
+                    done();
                 })
                 .catch(err => {
-					console.log(err);
+                    console.log(err);
                     assert.fail('Error thrown');
-					done();
+                    done();
                 });
-		
-		});
+
+        });
 
         it('should return an object if request succeed', function (done) {
             const req = {
                 body: {
-					roleId: 'roleId', 
-					subRoleId: 'subRoleId1', 
+                    roleId: 'roleId',
+                    subRoleId: 'subRoleId1',
                 }
             }
             const res = {
@@ -923,62 +924,62 @@ describe('Role Controller', function () {
                 }
             };
             RoleServices.addSubRoleToRole.returns(new Promise((resolve, reject) => {
-                resolve({ 
-					roleId: 'abc',
-					subRoles: ['subRoleId1'], 
-				});
+                resolve({
+                    roleId: 'abc',
+                    subRoles: ['subRoleId1'],
+                });
             }));
 
             RoleController.addSubRoleToRole(req, res, () => { })
-				.then(result => {
-	                expect(res).to.have.property('statusCode', 200);
-					expect(res.jsonObject).to.have.property('message', 'subRole added');
-	                expect(res.jsonObject.data).to.have.property('roleId', 'abc');
-					expect(res.jsonObject.data.subRoles).to.have.length(1);
-					expect(res.jsonObject.data.subRoles[0]).to.be.equal('subRoleId1');
-	                done();
-	            })
-				.catch(err => {
-					console.log(err);
-					assert.fail(err);
-					done();
-				});
+                .then(result => {
+                    expect(res).to.have.property('statusCode', 200);
+                    expect(res.jsonObject).to.have.property('message', 'subRole added');
+                    expect(res.jsonObject.data).to.have.property('roleId', 'abc');
+                    expect(res.jsonObject.data.subRoles).to.have.length(1);
+                    expect(res.jsonObject.data.subRoles[0]).to.be.equal('subRoleId1');
+                    done();
+                })
+                .catch(err => {
+                    console.log(err);
+                    assert.fail(err);
+                    done();
+                });
         });
 
         it('should call next(err) adding default statusCode if not specified', function (done) {
             const req = {
                 body: {
-					roleId: 'roleId', 
-					subRoleId: 'subRoleId1', 
+                    roleId: 'roleId',
+                    subRoleId: 'subRoleId1',
                 }
             }
             RoleServices.addSubRoleToRole.returns(new Promise((resolve, reject) => {
                 throw new Error('Undefined Error');
             }));
 
-			let nextCalled = false;
+            let nextCalled = false;
             RoleController.addSubRoleToRole(req, {}, (err) => {
                 expect(err).not.to.be.null;
                 expect(err).to.have.property('statusCode', 500);
                 nextCalled = true;
             })
                 .then(response => {
-					expect(response).to.be.null;
-					expect(nextCalled).to.be.true;
-					done();
+                    expect(response).to.be.null;
+                    expect(nextCalled).to.be.true;
+                    done();
                 })
                 .catch(err => {
-					console.log(err);
+                    console.log(err);
                     assert.fail('Error thrown');
-					done();
+                    done();
                 });
         });
 
         it('should call next(err) keeping specified statusCode', function (done) {
             const req = {
                 body: {
-					roleId: 'roleId', 
-					subRoleId: 'subRoleId1', 
+                    roleId: 'roleId',
+                    subRoleId: 'subRoleId1',
                 }
             }
             RoleServices.addSubRoleToRole.returns(new Promise((resolve, reject) => {
@@ -987,90 +988,90 @@ describe('Role Controller', function () {
                 throw error;
             }));
 
-			let nextCalled = false;
+            let nextCalled = false;
             RoleController.addSubRoleToRole(req, {}, (err) => {
                 expect(err).not.to.be.null;
                 expect(err).to.have.property('statusCode', 400);
                 nextCalled = true;
             })
                 .then(response => {
-					expect(response).to.be.null;
-					expect(nextCalled).to.be.true;
-					done();
+                    expect(response).to.be.null;
+                    expect(nextCalled).to.be.true;
+                    done();
                 })
                 .catch(err => {
-					console.log(err);
+                    console.log(err);
                     assert.fail('Error thrown');
-					done();
+                    done();
                 });
         });
-	});
-	describe('#removeSubRoleFromRole function', function () {
-		beforeEach(function () {
-			sinon.stub(RoleServices, 'removeSubRoleFromRole');
-		});
+    });
+    describe('#removeSubRoleFromRole function', function () {
+        beforeEach(function () {
+            sinon.stub(RoleServices, 'removeSubRoleFromRole');
+        });
 
-		afterEach(function () {
-			RoleServices.removeSubRoleFromRole.restore();
-		});
+        afterEach(function () {
+            RoleServices.removeSubRoleFromRole.restore();
+        });
 
-		it('should call next(err) if RoleId is not specified', function (done) {
+        it('should call next(err) if RoleId is not specified', function (done) {
             const req = {
                 body: {
-					subRoleId: 'subRoleId', 
+                    subRoleId: 'subRoleId',
                 }
             }
 
-			let nextCalled = false;
+            let nextCalled = false;
             RoleController.removeSubRoleFromRole(req, {}, (err) => {
                 expect(err).not.to.be.null;
                 expect(err).to.have.property('statusCode', 400);
                 nextCalled = true;
             })
                 .then(response => {
-					expect(response).to.be.null;
-					expect(nextCalled).to.be.true;
-					done();
+                    expect(response).to.be.null;
+                    expect(nextCalled).to.be.true;
+                    done();
                 })
                 .catch(err => {
-					console.log(err);
+                    console.log(err);
                     assert.fail('Error thrown');
-					done();
+                    done();
                 });
-		
-		});
 
-		it('should call next(err) if subRoleId is not specified', function (done) {
+        });
+
+        it('should call next(err) if subRoleId is not specified', function (done) {
             const req = {
                 body: {
-					roleId: 'roleId', 
+                    roleId: 'roleId',
                 }
             }
 
-			let nextCalled = false;
+            let nextCalled = false;
             RoleController.removeSubRoleFromRole(req, {}, (err) => {
                 expect(err).not.to.be.null;
                 expect(err).to.have.property('statusCode', 400);
                 nextCalled = true;
             })
                 .then(response => {
-					expect(response).to.be.null;
-					expect(nextCalled).to.be.true;
-					done();
+                    expect(response).to.be.null;
+                    expect(nextCalled).to.be.true;
+                    done();
                 })
                 .catch(err => {
-					console.log(err);
+                    console.log(err);
                     assert.fail('Error thrown');
-					done();
+                    done();
                 });
-		
-		});
+
+        });
 
         it('should return an object if request succeed', function (done) {
             const req = {
                 body: {
-					roleId: 'roleId', 
-					subRoleId: 'subRoleId1', 
+                    roleId: 'roleId',
+                    subRoleId: 'subRoleId1',
                 }
             }
             const res = {
@@ -1086,61 +1087,61 @@ describe('Role Controller', function () {
                 }
             };
             RoleServices.removeSubRoleFromRole.returns(new Promise((resolve, reject) => {
-                resolve({ 
-					roleId: 'abc',
-					subRoles: [ ], 
-				});
+                resolve({
+                    roleId: 'abc',
+                    subRoles: [],
+                });
             }));
 
             RoleController.removeSubRoleFromRole(req, res, () => { })
-				.then(result => {
-	                expect(res).to.have.property('statusCode', 200);
-					expect(res.jsonObject).to.have.property('message', 'subRole removed');
-	                expect(res.jsonObject.data).to.have.property('roleId', 'abc');
-					expect(res.jsonObject.data.subRoles).to.have.length(0);
-	                done();
-	            })
-				.catch(err => {
-					console.log(err);
-					assert.fail(err);
-					done();
-				});
+                .then(result => {
+                    expect(res).to.have.property('statusCode', 200);
+                    expect(res.jsonObject).to.have.property('message', 'subRole removed');
+                    expect(res.jsonObject.data).to.have.property('roleId', 'abc');
+                    expect(res.jsonObject.data.subRoles).to.have.length(0);
+                    done();
+                })
+                .catch(err => {
+                    console.log(err);
+                    assert.fail(err);
+                    done();
+                });
         });
 
         it('should call next(err) adding default statusCode if not specified', function (done) {
             const req = {
                 body: {
-					roleId: 'roleId', 
-					subRoleId: 'subRoleId1', 
+                    roleId: 'roleId',
+                    subRoleId: 'subRoleId1',
                 }
             }
             RoleServices.removeSubRoleFromRole.returns(new Promise((resolve, reject) => {
                 throw new Error('Undefined Error');
             }));
 
-			let nextCalled = false;
+            let nextCalled = false;
             RoleController.removeSubRoleFromRole(req, {}, (err) => {
                 expect(err).not.to.be.null;
                 expect(err).to.have.property('statusCode', 500);
                 nextCalled = true;
             })
                 .then(response => {
-					expect(response).to.be.null;
-					expect(nextCalled).to.be.true;
-					done();
+                    expect(response).to.be.null;
+                    expect(nextCalled).to.be.true;
+                    done();
                 })
                 .catch(err => {
-					console.log(err);
+                    console.log(err);
                     assert.fail('Error thrown');
-					done();
+                    done();
                 });
         });
 
         it('should call next(err) keeping specified statusCode', function (done) {
             const req = {
                 body: {
-					roleId: 'roleId', 
-					subRoleId: 'subRoleId1', 
+                    roleId: 'roleId',
+                    subRoleId: 'subRoleId1',
                 }
             }
             RoleServices.removeSubRoleFromRole.returns(new Promise((resolve, reject) => {
@@ -1149,24 +1150,24 @@ describe('Role Controller', function () {
                 throw error;
             }));
 
-			let nextCalled = false;
+            let nextCalled = false;
             RoleController.removeSubRoleFromRole(req, {}, (err) => {
                 expect(err).not.to.be.null;
                 expect(err).to.have.property('statusCode', 400);
                 nextCalled = true;
             })
                 .then(response => {
-					expect(response).to.be.null;
-					expect(nextCalled).to.be.true;
-					done();
+                    expect(response).to.be.null;
+                    expect(nextCalled).to.be.true;
+                    done();
                 })
                 .catch(err => {
-					console.log(err);
+                    console.log(err);
                     assert.fail('Error thrown');
-					done();
+                    done();
                 });
         });
-	});
+    });
 
 
 });

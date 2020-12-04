@@ -7,28 +7,28 @@ const Role = require('../model/role');
 
 describe('RoleServices', function () {
 	describe('#createRole function', function () {
-		let defaultRole;
-
+				let defaultRole;
+		
 		before(async () => {
 			await dbHandler.connect();
 			await Role.createIndexes();
 		});
-
+		
 		after(async () => {
 			await dbHandler.closeDatabase();
 		});
-
+		
 		afterEach(async () => {
 			await dbHandler.clearDatabase();
 		});
-
+		
 		beforeEach(async () => {
 			defaultRole = Role({
 				name: 'defaultName',
 				label: 'defaultLabel',
 			});
 			defaultRole = await defaultRole.save();
-
+			
 		});
 
 		it('should throw an error if Role with given name already exists', function (done) {
@@ -37,14 +37,14 @@ describe('RoleServices', function () {
 				label: 'otherLabel',
 			};
 
-			RoleServices.createRole(params)
-				.then(result => {
-					assert.fail('Error');
-				})
-				.catch(err => {
-					expect(err).to.have.property('message', `E11000 duplicate key error dup key: { : "${params.name}" }`);
-					done();
-				})
+            RoleServices.createRole(params)
+                .then(result => {
+                    assert.fail('Error');
+                })
+                .catch(err => {
+                    expect(err).to.have.property('message', `E11000 duplicate key error dup key: { : "${params.name}" }`);
+                    done();
+                })
 				.catch(err => {
 					console.log(err);
 					assert.fail(err);
@@ -58,14 +58,14 @@ describe('RoleServices', function () {
 				name: 'otherName',
 			};
 
-			RoleServices.createRole(params)
-				.then(result => {
-					assert.fail('Error');
-				})
-				.catch(err => {
-					expect(err).to.have.property('message', `E11000 duplicate key error dup key: { : "${params.label}" }`);
-					done();
-				})
+            RoleServices.createRole(params)
+                .then(result => {
+                    assert.fail('Error');
+                })
+                .catch(err => {
+                    expect(err).to.have.property('message', `E11000 duplicate key error dup key: { : "${params.label}" }`);
+                    done();
+                })
 				.catch(err => {
 					console.log(err);
 					assert.fail(err);
@@ -78,45 +78,45 @@ describe('RoleServices', function () {
 				name: 'otherName',
 				label: 'otherLabel',
 			};
-			RoleServices.createRole(params)
-				.then(result => {
+            RoleServices.createRole(params)
+                .then(result => {
 					expect(result).to.have.ownProperty('roleId');
 					expect(result).to.have.property('name', params.name);
 					expect(result).to.have.property('label', params.label);
 					done();
-				})
-				.catch(err => {
-					console.log(err);
-					assert.fail('UserService Error');
+                })
+                .catch(err => {
+                    console.log(err);
+                    assert.fail('UserService Error');
 					done();
-				})
+                })
 		});
 	});
 
 
 	describe('#deleteRole function', function () {
-		let defaultRole;
-
+				let defaultRole;
+		
 		before(async () => {
 			await dbHandler.connect();
 			await Role.createIndexes();
 		});
-
+		
 		after(async () => {
 			await dbHandler.closeDatabase();
 		});
-
+		
 		afterEach(async () => {
 			await dbHandler.clearDatabase();
 		});
-
+		
 		beforeEach(async () => {
 			defaultRole = Role({
 				name: 'defaultName',
 				label: 'defaultLabel',
 			});
 			defaultRole = await defaultRole.save();
-
+			
 		});
 
 		it('should throw an error if Role to delete is not found', function (done) {
@@ -154,46 +154,46 @@ describe('RoleServices', function () {
 					assert.fail(err);
 					done();
 				});
-		});
+		});		
 	});
 
 	describe('#getRoles function', function () {
-		let defaultRole;
-
+				let defaultRole;
+		
 		before(async () => {
 			await dbHandler.connect();
 			await Role.createIndexes();
 		});
-
+		
 		after(async () => {
 			await dbHandler.closeDatabase();
 		});
-
+		
 		afterEach(async () => {
 			await dbHandler.clearDatabase();
 		});
-
+		
 		beforeEach(async () => {
-
+			
 			for (let i = 0; i < 20; i++) {
 				const role = new Role({
 					name: 'Name_' + i,
 					label: 'Label_' + i,
 				});
 				await role.save();
-			}
+			}			
 		});
 
 		it('should throw an error if range out of bounds', function (done) {
-			RoleServices.getRoles({ page: '3', perPage: '10' })
-				.then(result => {
-					assert.fail('Error');
-				})
-				.catch(err => {
-					expect(err).to.have.property('message', 'Pagination out of bounds.');
-					expect(err).to.have.property('statusCode', 400);
-					done();
-				})
+            RoleServices.getRoles({ page: '3', perPage: '10' })
+                .then(result => {
+                    assert.fail('Error');
+                })
+                .catch(err => {
+                    expect(err).to.have.property('message', 'Pagination out of bounds.');
+                    expect(err).to.have.property('statusCode', 400);
+                    done();
+                })
 				.catch(err => {
 					console.log(err);
 					assert.fail(err);
@@ -202,61 +202,61 @@ describe('RoleServices', function () {
 		});
 
 		it('should return an object containing the required data and the number if pages', function (done) {
-			const perPage = '10';
-			RoleServices.getRoles({ page: 1, perPage: perPage })
-				.then(result => {
-					expect(result).to.have.property('pageCount', 2);
-					expect(result).to.have.property('roles').to.have.lengthOf(perPage);
-					done();
-				})
-				.catch(err => {
-					console.log(err);
-					assert.fail(err);
-					done();
-				})
+            const perPage = '10';
+            RoleServices.getRoles({ page: 1, perPage: perPage })
+                .then(result => {
+                    expect(result).to.have.property('pageCount', 2);
+                    expect(result).to.have.property('roles').to.have.lengthOf(perPage);
+                    done();
+                })
+                .catch(err => {
+                    console.log(err);
+                    assert.fail(err);
+                    done();
+                })			
 		});
 
-		it('should return an object containing the required data and the number of pages 2', function (done) {
-			const perPage = '7';
-			RoleServices.getRoles({ page: '1', perPage: perPage })
-				.then(result => {
-					expect(result).to.have.property('pageCount', 3);
-					expect(result).to.have.property('roles').to.have.lengthOf(perPage);
-					done();
-				})
-				.catch(err => {
-					console.log(err);
-					assert.fail(err);
-					done();
-				})
-		});
+        it('should return an object containing the required data and the number of pages 2', function (done) {
+            const perPage = '7';
+            RoleServices.getRoles({ page: '1', perPage: perPage })
+                .then(result => {
+                    expect(result).to.have.property('pageCount', 3);
+                    expect(result).to.have.property('roles').to.have.lengthOf(perPage);
+                    done();
+                })
+                .catch(err => {
+                    console.log(err);
+                    assert.fail(err);
+                    done();
+                })
+        });
 	});
 
 	describe('#getRole function', function () {
-		let defaultRole;
-
+				let defaultRole;
+		
 		before(async () => {
 			await dbHandler.connect();
 			await Role.createIndexes();
 		});
-
+		
 		after(async () => {
 			await dbHandler.closeDatabase();
 		});
-
+		
 		afterEach(async () => {
 			await dbHandler.clearDatabase();
 		});
-
+		
 		beforeEach(async () => {
 			defaultRole = Role({
 				name: 'defaultName',
 				label: 'defaultLabel',
 			});
 			defaultRole = await defaultRole.save();
-
+			
 		});
-
+	
 		it('should throw an error if Role not found', function (done) {
 			RoleServices.getRole({ roleId: ObjectId().toString() })
 				.then(result => {
@@ -291,28 +291,28 @@ describe('RoleServices', function () {
 	});
 
 	describe('#findRoleByName function', function () {
-		let defaultRole;
-
+				let defaultRole;
+		
 		before(async () => {
 			await dbHandler.connect();
 			await Role.createIndexes();
 		});
-
+		
 		after(async () => {
 			await dbHandler.closeDatabase();
 		});
-
+		
 		afterEach(async () => {
 			await dbHandler.clearDatabase();
 		});
-
+		
 		beforeEach(async () => {
 			defaultRole = Role({
 				name: 'defaultName',
 				label: 'defaultLabel',
 			});
 			defaultRole = await defaultRole.save();
-
+			
 		});
 
 		it('should throw an error if Role is not found', function (done) {
@@ -356,28 +356,28 @@ describe('RoleServices', function () {
 	});
 
 	describe('#findRoleByLabel function', function () {
-		let defaultRole;
-
+				let defaultRole;
+		
 		before(async () => {
 			await dbHandler.connect();
 			await Role.createIndexes();
 		});
-
+		
 		after(async () => {
 			await dbHandler.closeDatabase();
 		});
-
+		
 		afterEach(async () => {
 			await dbHandler.clearDatabase();
 		});
-
+		
 		beforeEach(async () => {
 			defaultRole = Role({
 				name: 'defaultName',
 				label: 'defaultLabel',
 			});
 			defaultRole = await defaultRole.save();
-
+			
 		});
 
 		it('should throw an error if Role is not found', function (done) {
@@ -422,41 +422,41 @@ describe('RoleServices', function () {
 
 
 	describe('#addSubRoleToRole function', function () {
-		let defaultRole;
-
+				let defaultRole;
+		
 		let innerRole;
 		before(async () => {
 			await dbHandler.connect();
 			await Role.createIndexes();
 		});
-
+		
 		after(async () => {
 			await dbHandler.closeDatabase();
 		});
-
+		
 		afterEach(async () => {
 			await dbHandler.clearDatabase();
 		});
-
+		
 		beforeEach(async () => {
 			defaultRole = Role({
 				name: 'defaultName',
 				label: 'defaultLabel',
 			});
 			defaultRole = await defaultRole.save();
-
+			
 			innerRole = Role({
 				name: 'innerName',
 				label: 'innerLabel',
 			});
 			innerRole = await innerRole.save();
-
+			
 		});
 
 		it('should throw an error if Role is not found', function (done) {
 			const params = {
 				roleId: new ObjectId().toString(),
-				subRoleId: innerRole._id.toString(),
+				subRoleId: innerRole._id.toString(), 
 			};
 
 			RoleServices.addSubRoleToRole(params)
@@ -478,7 +478,7 @@ describe('RoleServices', function () {
 		it('should throw an error if subRole is not found', function (done) {
 			const params = {
 				roleId: defaultRole._id.toString(),
-				subRoleId: new ObjectId().toString(),
+				subRoleId: new ObjectId().toString(), 
 			};
 
 			RoleServices.addSubRoleToRole(params)
@@ -500,7 +500,7 @@ describe('RoleServices', function () {
 		it('should throw an error if subRole is already in subRoles', function (done) {
 			const params = {
 				roleId: defaultRole._id.toString(),
-				subRoleId: innerRole._id.toString(),
+				subRoleId: innerRole._id.toString(), 
 			};
 
 			defaultRole.subRoles.push(innerRole._id.toString());
@@ -522,27 +522,27 @@ describe('RoleServices', function () {
 						});
 				})
 		});
-
+		
 		it('should add Role to Role subRoles', function (done) {
 			const params = {
 				roleId: defaultRole._id.toString(),
-				subRoleId: innerRole._id.toString(),
+				subRoleId: innerRole._id.toString(), 
 			};
 
 			RoleServices.addSubRoleToRole(params)
 				.then(() => {
-					Role.findOne({ _id: defaultRole._id.toString() })
+					Role.findOne({_id: defaultRole._id.toString() })
 						.then(newRole => {
 							expect(newRole).not.to.be.null;
 							expect(newRole.subRoles.length).to.be.equal(1);
-							expect(newRole.subRoles.includes(innerRole._id.toString())).to.be.true;
+							expect(newRole.subRoles.includes(innerRole._id.toString())).to.be.true;							
 							done();
 						})
-						.catch(err => {
-							console.log(err);
-							assert.fail(err);
-							done();
-						})
+					.catch(err => {
+						console.log(err);
+						assert.fail(err);
+						done();
+					})
 				})
 				.catch(err => {
 					console.log(err);
@@ -553,36 +553,36 @@ describe('RoleServices', function () {
 	});
 
 	describe('#removeSubRoleFromRole function', function () {
-		let defaultRole;
-
+				let defaultRole;
+		
 		let innerRole;
 		before(async () => {
 			await dbHandler.connect();
 			await Role.createIndexes();
 		});
-
+		
 		after(async () => {
 			await dbHandler.closeDatabase();
 		});
-
+		
 		afterEach(async () => {
 			await dbHandler.clearDatabase();
 		});
-
+		
 		beforeEach(async () => {
 			defaultRole = Role({
 				name: 'defaultName',
 				label: 'defaultLabel',
 			});
 			defaultRole = await defaultRole.save();
-
+			
 			innerRole = Role({
 				name: 'innerName',
 				label: 'innerLabel',
 			});
 			innerRole = await innerRole.save();
-
-
+			
+			
 			defaultRole.subRoles.push(innerRole._id);
 			defaultRole = await defaultRole.save();
 		});
@@ -590,7 +590,7 @@ describe('RoleServices', function () {
 		it('should throw an error if Role is not found', function (done) {
 			const params = {
 				roleId: new ObjectId().toString(),
-				subRoleId: innerRole._id.toString(),
+				subRoleId: innerRole._id.toString(), 
 			};
 
 			RoleServices.removeSubRoleFromRole(params)
@@ -612,7 +612,7 @@ describe('RoleServices', function () {
 		it('should throw an error if subRole is not found', function (done) {
 			const params = {
 				roleId: defaultRole._id.toString(),
-				subRoleId: new ObjectId().toString(),
+				subRoleId: new ObjectId().toString(), 
 			};
 
 			RoleServices.removeSubRoleFromRole(params)
@@ -634,7 +634,7 @@ describe('RoleServices', function () {
 		it('should throw an error if subRole is not in subRoles', function (done) {
 			const params = {
 				roleId: defaultRole._id.toString(),
-				subRoleId: innerRole._id.toString(),
+				subRoleId: innerRole._id.toString(), 
 			};
 
 			defaultRole.subRoles = [];
@@ -656,20 +656,20 @@ describe('RoleServices', function () {
 					done();
 				});
 		});
-
+		
 		it('should remove Role from Role subRoles', function (done) {
 			const params = {
 				roleId: defaultRole._id.toString(),
-				subRoleId: innerRole._id.toString(),
+				subRoleId: innerRole._id.toString(), 
 			};
 
 			RoleServices.removeSubRoleFromRole(params)
 				.then(() => {
-					Role.findOne({ _id: defaultRole._id.toString() })
+					Role.findOne({_id: defaultRole._id.toString() })
 						.then(newRole => {
 							expect(newRole).not.to.be.null;
 							expect(newRole.subRoles.length).to.be.equal(0);
-							expect(newRole.subRoles.includes(innerRole._id.toString())).to.be.false;
+							expect(newRole.subRoles.includes(innerRole._id.toString())).to.be.false;							
 							done();
 						})
 						.catch(err => {

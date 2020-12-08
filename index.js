@@ -1,5 +1,5 @@
 module.exports = {
 	Role: require('./model/role'),
-	RoleController: require('./controllers/rolecontroller'),
+	RoleController: require('./controller/rolecontroller'),
 	RoleServices: require('./services/roleservices'),
 };
